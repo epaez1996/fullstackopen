@@ -7,6 +7,7 @@ const middleware = require('./utils/middleware')
 const logger = require('./utils/logger')
 const config = require('./utils/config')
 const userRouter = require('./controllers/users')
+require('express-async-errors')
 
 logger.info('connecting to', config.MONGODB_URI)
 
