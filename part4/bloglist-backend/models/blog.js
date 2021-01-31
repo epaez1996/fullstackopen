@@ -3,7 +3,8 @@ const mongoose = require('mongoose')
 const blogSchema = new mongoose.Schema({
     title: {
       type: String,
-      //required: true 
+      required: true,
+      unique: true 
     },
     author: String,
     url: {
@@ -15,6 +16,8 @@ const blogSchema = new mongoose.Schema({
       default: 0,
     }
 })
+
+//blogSchema.plugin(uniqueValidator)
 
 blogSchema.set('toJSON', {
   transform: (document, returnedObject) => {

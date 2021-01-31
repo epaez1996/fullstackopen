@@ -6,6 +6,7 @@ const mongoose = require('mongoose')
 const middleware = require('./utils/middleware')
 const logger = require('./utils/logger')
 const config = require('./utils/config')
+const userRouter = require('./controllers/users')
 
 logger.info('connecting to', config.MONGODB_URI)
 
@@ -21,7 +22,7 @@ app.use(cors())
 app.use(express.json())
 app.use(middleware.requestLogger)
 app.use('/api/blogs', blogsRouter)
-
+app.use('/api/users', userRouter)
 app.use(middleware.unknownEndpoint)
 app.use(middleware.errorHandler)
 

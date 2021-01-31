@@ -96,10 +96,14 @@ test('a blog with no title returns 400 bad request', async () => {
         url: 'cap.com'
     }
 
-    await api
-        .post('/api/blogs', requestBlog)
+    const result = await api
+        .post('/api/blogs')
         .send(requestBlog)
         .expect(400)
+        .expect('Content-Type', /application\/json/)
+
+    console.log('Result is', result)
+        expect(result.body.error).toContain('ValidationError')
 })
 
 afterAll(() => {
