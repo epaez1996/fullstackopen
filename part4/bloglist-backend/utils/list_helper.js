@@ -1,14 +1,12 @@
+const collection = require('lodash/collection')
+var groupBy = require('lodash.groupby');
+var pull = require('lodash.pull');
+var sortBy = require('lodash.sortby');
 const dummy = (blogs) => {
     return 1;
 }
 
 const totalLikes = (blogs) => {
-    // const reducer = (sum, item) => {
-    //     return sum + item
-    // }
-
-    // return blogs.reduce(reducer, 0);
-
     let total = blogs.reduce((sum, currentVal) => {
         return sum + currentVal.likes
     }, 0)
@@ -17,8 +15,6 @@ const totalLikes = (blogs) => {
 }
 
 const favoriteBlog = (blogs) => {
-   // console.log('blogs is', typeof(blogs[0]))
-// Go over this after exercise submitted 
     if (blogs.length === 0) {
         return {};
     }
@@ -28,7 +24,7 @@ const favoriteBlog = (blogs) => {
    }, blogs[0].likes) 
 
    const mostFavBlog = blogs.filter( blog => blog.likes === mostLikes)
-   //console.log('mostFavBlog', mostFavBlog)
+  
    return {
        title: mostFavBlog[0].title,
        author: mostFavBlog[0].author,
@@ -36,8 +32,26 @@ const favoriteBlog = (blogs) => {
    }
 }
 
+const mostBlogs = (blogs) => {
+   const authorList = blogs.map(blog => blog.author)
+   console.log('authorList is', authorList)
+   const newList = authorList.map(author => {
+       console.log('author is', author)
+       return pull(authorList, author)
+   })
+
+   return newList
+}
+
+const mostLikes = (blogs) => {
+    const sortedList = sortBy(blogs, ['author', 'likes'])
+    return sortedList
+}
+
 module.exports = {
     dummy,
     totalLikes,
-    favoriteBlog
+    favoriteBlog,
+    mostBlogs,
+    mostLikes
 }

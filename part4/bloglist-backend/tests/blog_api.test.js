@@ -5,42 +5,17 @@ const app = require('../app')
 const api = supertest(app)
 const Blog = require('../models/blog')
 const User = require('../models/user')
-const initialBlogs = [
-    {
-        title: "Testing backend api",
-        author: "Edward Paez",
-        url: "test.com"
-    },
-    {
-        title: "Testing backend apiii",
-        author: "Edward Paez",
-        url: "test2.com"
-    }
-]
+const helper = require('./api_test_helper')
+const bcrypt = require('bcrypt')
 
-const initialUsers = [
-    {
-        username: "eddsipe",
-        name: "edd",
-        password: "woah" 
-    },
-    {
-        username: "eddsipe5",
-        name: "eddster",
-        password: "woahwow" 
-    }
-
-]
-
-describe('when there is initially some notes saved', () => {
+describe('when there is initially some blogs saved', () => {
     beforeEach(async () => {
         await Blog.deleteMany({})
-    
-        let blogObject = new Blog(initialBlogs[0])
-        await blogObject.save()
-    
-        blogObject = new Blog(initialBlogs[1])
-        await blogObject.save()
+
+        const blogObjects = helper.initialBlogs
+            .map(blog => new Blog(blog))
+        const promiseArray = blogObjects.map(blog => blog.save())
+        await Promise.all(promiseArray)
     });
     
     test('blogs returned in json', async () => {
@@ -53,8 +28,7 @@ describe('when there is initially some notes saved', () => {
     test('all blogs are returned' , async () => {
        const response = await api.get('/api/blogs')
     
-       expect(response.body).toHaveLength(initialBlogs.length)
-       expect()
+       expect(response.body).toHaveLength(helper.initialBlogs.length)
     })
     
     test('unique id of blogs is named id, not _id', async () => {
@@ -67,82 +41,103 @@ describe('when there is initially some notes saved', () => {
     
     })
     
-    test('a blog post was successfully added', async () => {
-        const newBlog = {
-            title: "testing backend Pog",
-            author: "Edward Paez",
-            url: "test3.com"
-        }
+    describe('adding new blog posts', () => {
+        let token;
+        beforeAll(async () => {
+            await User.deleteMany({})
+            
+            const saltRounds = 10;
+            const passwordHash = await bcrypt.hash('test', saltRounds)
+            const validUser = new User({ username: 'tester', name:"testso", passwordHash})
+            await validUser.save()
+
+            const loginResponse = await api 
+                            .post('/api/login')
+                            .send({ username: 'tester', password: 'test'})
+                            .expect(200)
+            const loginBody = loginResponse.body 
+            token = loginBody.token
+
+            return token
+        })
     
-        await api  
-            .post('/api/blogs', newBlog)
-            .send(newBlog)
-            .expect(200)
-    
-            const response = await api.get('/api/blogs')
+        test('a blog post was successfully added', async () => {
+            
+            const newBlog = {
+                title: "testing backend Pog",
+                author: "Edward Paez",
+                url: "test3.com",
+            }
         
-        const titles = response.body.map(blog => blog.title)
+            await api  
+                .post('/api/blogs')
+                .send(newBlog)
+                .set({ Authorization: `Bearer ${token}`})
+                .expect(200)
+            
+            const blogsAtEnd = await helper.blogsInDb()
+            expect(blogsAtEnd.length).toBe(helper.initialBlogs.length + 1)
+        })
+
+        test('a blog with no likes gives 0 likes back', async () => {
+            const newBlog = {
+                title: "testing backend Pog",
+                author: "Edward Paez",
+                url: "test3.com",
+            }
         
-        expect(response.body).toHaveLength(initialBlogs.length+1)
-        expect(titles).toContain('testing backend Pog')
+            const blogResponse = await api  
+                .post('/api/blogs')
+                .send(newBlog)
+                .set({ Authorization: `Bearer ${token}`})
+                .expect(200)
+            const blogResponseBody = blogResponse.body
+            expect(blogResponseBody.likes).toBe(0)
+        });
+        
+        test('a blog with no title or url returns 400 bad request', async () => {
+            const newBlog = {
+                likes: 500
+            }
+        
+            await api  
+                .post('/api/blogs')
+                .send(newBlog)
+                .set({ Authorization: `Bearer ${token}`})
+                .expect(400)
+
+            const blogsAtEnd = await helper.blogsInDb()
+
+            expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+        })
+
+        test('a blog with no token provided returns 401 unauthorized', async () => {
+            const newBlog = {
+                title: "testing backend Pog",
+                author: "Edward Paez",
+                url: "test3.com",
+            }
+
+            await api  
+                .post('/api/blogs')
+                .send(newBlog)
+                .set({ Authorization: `Bearer `})
+                .expect(401)
+        })
     })
-    
-    test('a blog with no likes gives 0 likes back', async () => {
-       const requestBlog = {
-           title: "lol",
-           author: "lmao",
-           url: "bruh.com"
-       }
-    
-       await api
-            .post('/api/blogs', requestBlog)
-            .send(requestBlog)
-            .expect(201)
-    
-       const response = await api.get('/api/blogs')
-       const mostRecentBlogLikes = response.body.pop().likes
-    
-       expect(mostRecentBlogLikes).toBe(0)
-    })
-    
-    // test('a blog with no title returns 400 bad request', async () => {
-    //     const requestBlog = {  
-    //         likes: 5,
-    //         author: "lmao",
-    //         url: 'cap.com'
-    //     }
-    
-    //     const result = await api
-    //         .post('/api/blogs')
-    //         .send(requestBlog)
-    //         .expect(400)
-    //         .expect('Content-Type', /application\/json/)
-    
-    //     console.log('Result is', result)
-    //         expect(result.body.error).toContain('ValidationError')
-    // })
 })
-
 describe('when initial users are saved', () => {
-    beforeEach(async () => {
-        await User.deleteMany({})
-    
-        let userObject = new User(initialUsers[0])
-        await userObject.save()
-    
-        userObject = new User(initialUsers[1])
-        await userObject.save()
-    });
-
     test('username must be unique for users', async () => {
         const newUser =  {
             username: "eddsipe",
             password: "testing"
         }
+        newUserSaved = new User(newUser)
+        await newUserSaved.save()
 
         await api
             .post('/api/users')
-            .send(newUser)
+            .send({username: "eddsipe", password: "pword"})
             .expect(400)
     })
 

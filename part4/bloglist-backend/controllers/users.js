@@ -1,7 +1,7 @@
 const userRouter = require('express').Router()
 const bcrypt = require('bcrypt')
 const User = require('../models/user')
-
+require('express-async-errors')
 userRouter.post('/', async (request, response, next) => {
     const body = request.body;
     
@@ -15,16 +15,15 @@ userRouter.post('/', async (request, response, next) => {
 
     const saltRounds = 10
     const passwordHash = await bcrypt.hash(body.password, saltRounds)
-    
+    console.log('passwordHash', passwordHash)
     const user = new User({
         username: body.username,
         name: body.name,
         passwordHash,
     })
-    //console.log('user after pwhash', user)
+  
     try {
         const savedUser = await user.save()
-        //console.log('savedUser is', savedUser)
         response.json(savedUser)
     } catch(exception) {
         next(exception)

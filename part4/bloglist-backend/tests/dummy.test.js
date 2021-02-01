@@ -94,3 +94,47 @@ describe('most favorite blog', () => {
     })
     
 })
+describe('a list containing 4 blogs', () => {
+    const biggerList = [
+        {
+            _id: '5a422aa71b54a676234d47f8',
+            title: 'Go To Statement Considered Harmful',
+            author: 'tester',
+            url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
+            likes: 5,
+            __v: 0
+        },
+        {
+            _id: '5a422aa71b54a676234d17f8',
+            title: 'Go To Statement Considered Harmful',
+            author: 'Edsger W. Dijkstra',
+            url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
+            likes: 13,
+            __v: 0
+        },
+        {
+            _id: '6a422aa71b54a676234d17f8',
+            title: 'Go To Statement Considered Harmful',
+            author: 'Edsger W. Dijkstra',
+            url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
+            likes: 0,
+            __v: 0
+        },
+        {
+            _id: '1a422aa71b54a676234d17f8',
+            title: 'Go To Statement Considered Harmful',
+            author: 'woah',
+            url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
+            likes: 2,
+            __v: 0
+        }
+    ]
+
+    test('returns author who has the largest amount of blogs', async () => {
+        // const list = listHelper.mostBlogs(biggerList)
+        // console.log('list is', list)
+
+        const list = listHelper.mostLikes(biggerList)
+        console.log('list is', list)
+    })
+})
