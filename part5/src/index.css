@@ -1,0 +1,17 @@
+.error-msg {
+    background: lightgrey;
+    padding: 5px;
+    color: red;
+    border: red 3px solid;
+    font-weight: bold;
+    font-size: 17px
+}
+
+.success-msg {
+    background: lightgrey;
+    padding: 5px;
+    color: green;
+    border: green 3px solid;
+    font-weight: bold;
+    font-size: 17px;
+}
