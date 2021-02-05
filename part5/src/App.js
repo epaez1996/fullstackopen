@@ -12,9 +12,6 @@ const App = () => {
   const [user, setUser] = useState(null)
   const [username, setUserName] = useState('')
   const [password, setPassword] = useState('')
-  const [blogTitle, setBlogTitle] = useState('')
-  const [blogAuthor, setBlogAuthor] = useState('')
-  const [blogUrl, setBlogUrl] = useState('')
   const [errorMessage, setErrorMessage] = useState(null)
   const [successMessage, setSuccessMessage] = useState(null)
   
@@ -61,21 +58,10 @@ const App = () => {
   }
 
   
-  const createNewBlog = async (event) => {
-    event.preventDefault()
-    const newBlog = {
-      title: blogTitle,
-      author: blogAuthor,
-      url: blogUrl,
-      user: user.id
-    }
-
+  const createNewBlog = async (newBlog) => {
     const blogCreated = await blogService.create(newBlog)
     
     setBlogs(blogs.concat(blogCreated))
-    setBlogAuthor('')
-    setBlogTitle('')
-    setBlogUrl('')
     setSuccessMessage(`a new blog ${blogCreated.title} by ${blogCreated.author} added`)
     
     setTimeout(() => {
@@ -86,9 +72,6 @@ const App = () => {
 
   const handleUsernameInput = event => setUserName(event.target.value)
   const handlePasswordInput = event => setPassword(event.target.value)
-  const handleTitleChange = event => setBlogTitle(event.target.value)
-  const handleAuthorChange = event => setBlogAuthor(event.target.value)
-  const handleUrlChange = event => setBlogUrl(event.target.value)
 
   const blogList = blogs.map(blog => {
     return <Blog key={blog.id} blog={blog} />
@@ -111,13 +94,8 @@ const App = () => {
           <p>{user.name} logged in <button onClick={handleLogout}>logout</button></p> 
           <h2>create new</h2>
           <BlogForm 
-            blogTitle={blogTitle}
-            blogAuthor={blogAuthor}
-            blogUrl={blogUrl}
-            handleTitleChange={handleTitleChange}
-            handleAuthorChange={handleAuthorChange}
-            handleUrlChange={handleUrlChange}
             createNewBlog={createNewBlog}
+            userId={user.id}
           />
           {blogList}
         </div>
