@@ -15,7 +15,7 @@ const App = () => {
   
   useEffect(() => {
     blogService.getAll().then(blogs =>
-      setBlogs( blogs )
+      setBlogs( blogs.sort((a, b) => a.likes - b.likes) )
     )  
   }, [])
 
@@ -58,7 +58,7 @@ const App = () => {
     blogFormRef.current.toggleVisibility()
     const blogCreated = await blogService.create(newBlog)
     
-    setBlogs(blogs.concat(blogCreated))
+    setBlogs(blogs.concat(blogCreated).sort((a, b) => a.likes - b.likes))
     setSuccessMessage(`a new blog ${blogCreated.title} by ${blogCreated.author} added`)
     
     setTimeout(() => {
@@ -68,9 +68,36 @@ const App = () => {
   }      
 
 
+  const updateBlog = (updatedBlog) => {
+    const blogToUpdate = blogs.find(blog => blog.id === updatedBlog.id)
+    let posOfBlogToUpdate = blogs.indexOf(blogToUpdate)
+   
+    const tempArray = [...blogs]
+    updatedBlog.user = blogToUpdate.user
+    tempArray[posOfBlogToUpdate] = updatedBlog
+    
+    setBlogs(tempArray.sort((a, b) => a.likes - b.likes))
+  }  
+
   const blogList = blogs.map(blog => {
-    return <Blog key={blog.id} blog={blog} />
+    return <Blog 
+              key={blog.id} 
+              blog={blog} 
+              updateBlog={updateBlog}
+              deleteBlog={() => deleteBlog(blog)}/>
   })
+
+  const deleteBlog = (blogToDelete) => {
+    const answer = window.confirm(`Remove blog ${blogToDelete.title} by ${blogToDelete.author}`)
+    if (answer) {
+      blogService
+      .remove(blogToDelete)
+      .then(setBlogs(blogs.filter(blog => blog.id !== blogToDelete.id)))
+      .catch(err => {
+        console.log(err)
+      })
+    }
+  }
 
   const loginForm = () => (
     
@@ -82,7 +109,7 @@ const App = () => {
   )
   
   const blogForm = () => (
-    <Toggable buttonLabel="new blog" ref={blogFormRef}>
+    <Toggable buttonLabel="create new blog" ref={blogFormRef}>
       <BlogForm 
         createNewBlog={createNewBlog}
         userId={user.id}
@@ -91,8 +118,7 @@ const App = () => {
   )
 
   const blogFormRef = useRef()
-  const loginFormRef = useRef()
-
+ 
   return (
     <div>
       {user === null ?
